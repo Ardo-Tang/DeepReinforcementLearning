@@ -23,13 +23,14 @@ states = env.observation_space.n
 eposides = 200000
 epsilon = 0.8
 gamma = 0.9
-alpha = 0.5 #lr
+alpha = 0.01#lr
 
 # Create Q table with all rewards = 0
 q_table = np.zeros((states, actions))
 
 # Training
 total_reward = 0
+count = 1
 for i in range(eposides):
     env.reset()
     done = False
@@ -51,8 +52,13 @@ for i in range(eposides):
     total_reward = total_reward + reward
     print("\r{}/{}\t{:.1%}, epsilon={:.3f}   ".format(i+1, eposides, total_reward/(i+1), epsilon),end="")
     
-    if(reward > 0 and epsilon > 0.001):
-        epsilon *= 0.8
+    if(reward > 0):
+        count+=1
+    if(count%10 == 0 and epsilon > 0.005):
+        epsilon *= 0.99
+        count=1
+    if(not epsilon > 0.005):
+        epsilon = 0.8
 
 with open('Q_table.csv', 'w') as f:
     f.write('state,action0,action1,action2,action3\n')
