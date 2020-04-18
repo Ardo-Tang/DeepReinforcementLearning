@@ -4,16 +4,16 @@ The deep reinforcement learning course.
 ## HW1-FrozenLake8x8 based on example
 
 ### Learning
-![avatar][learning]
+![image](1.png)
 > epoch/all epoch, accuracy, current epsilon.
 
 ### Reduce the change of random learning.
-![avatar][reduce]
+![image](2.png)
 
 > I think that if the agent got a right way to the target often, the agent should more belief of Q_table. When every time it got target, it reduce the random probability.
 
 ### Luck needed
-![avatar][result]
+![image](3.png)
 
 > Get high score need luck.
 
