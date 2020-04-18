@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 web.txt
 *.csv
+*.png
+picture.py
