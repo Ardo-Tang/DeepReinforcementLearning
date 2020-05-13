@@ -5,16 +5,16 @@ The homework of deep reinforcement learning course. *(based on example)*
 ## Homework #1 FrozenLake8x8
 
 ### Learning
-![image](1.png)
+![image](.pictures/1.png)
 > The value mean "epoch/all epoch", "accuracy", "current epsilon".
 
 ### Reduce the change of random learning.
-![image](2.png)
+![image](.pictures/2.png)
 
 > I think that if the agent got a right way to the target often, the agent should more belief of Q_table. When every time it got target, it reduce the random probability.
 
 ### Luck needed
-![image](3.png)
+![image](.pictures/3.png)
 
 > Get high score need some good luck.
 
