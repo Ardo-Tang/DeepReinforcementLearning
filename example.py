@@ -8,7 +8,7 @@ import numpy as np
 import random
 import matplotlib
 import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
+# get_ipython().run_line_magic('matplotlib', 'inline')
 import math
 import glob
 import io
@@ -16,8 +16,9 @@ import base64
 from IPython.display import HTML
 from IPython import display as ipythondisplay
 from pyvirtualdisplay import Display
-display = Display(visible=0, size=(1400, 900))
-display.start()
+import torch
+# display = Display(visible=0, size=(1400, 900))
+# display.start()
 
 def show_video():
   mp4list = glob.glob('video/*.mp4')
@@ -49,7 +50,7 @@ while True:
 env.close()
 show_video()
 
-import torch
+
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -474,7 +475,7 @@ while True:
     action = env_test.action_space.sample() 
     observation, reward, done, info = env_test.step(action)         
     if done: 
-      break;
+      break
 env_test.close()
 show_video()
 
