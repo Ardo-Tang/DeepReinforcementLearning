@@ -1,4 +1,4 @@
-from IPython import get_ipython
+# from IPython import get_ipython
 import gym
 from gym import logger as gymlogger
 from gym.wrappers import Monitor
@@ -48,7 +48,7 @@ while True:
     if done: 
       break
 env.close()
-# show_video()
+show_video()
 
 
 import torch.nn as nn
@@ -58,7 +58,8 @@ from torch.distributions import Beta
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 import time
 from collections import deque
-
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
 
 # %%
 class Net(nn.Module):
@@ -68,7 +69,7 @@ class Net(nn.Module):
 
     def __init__(self, img_stack):
         super(Net, self).__init__()
-        self.cnn_base = nn.Sequential(  # input shape (4, 96, 96)
+        self.cnn_base = nn.DataParallel(nn.Sequential(  # input shape (4, 96, 96)
             nn.Conv2d(img_stack, 8, kernel_size=4, stride=2),
             nn.ReLU(),  # activation
             nn.Conv2d(8, 16, kernel_size=3, stride=2),  # (8, 47, 47)
@@ -81,11 +82,12 @@ class Net(nn.Module):
             nn.ReLU(),  # activation
             nn.Conv2d(128, 256, kernel_size=3, stride=1),  # (128, 3, 3)
             nn.ReLU(),  # activation
-        )  # output shape (256, 1, 1)
-        self.v = nn.Sequential(nn.Linear(256, 100), nn.ReLU(), nn.Linear(100, 1))
-        self.fc = nn.Sequential(nn.Linear(256, 100), nn.ReLU())
-        self.alpha_head = nn.Sequential(nn.Linear(100, 3), nn.Softplus())
-        self.beta_head = nn.Sequential(nn.Linear(100, 3), nn.Softplus())
+        )).cuda()  # output shape (256, 1, 1)
+
+        self.v = nn.DataParallel(nn.Sequential(nn.Linear(256, 100), nn.ReLU(), nn.Linear(100, 1))).cuda()
+        self.fc = nn.DataParallel(nn.Sequential(nn.Linear(256, 100), nn.ReLU())).cuda()
+        self.alpha_head = nn.DataParallel(nn.Sequential(nn.Linear(100, 3), nn.Softplus())).cuda()
+        self.beta_head = nn.DataParallel(nn.Sequential(nn.Linear(100, 3), nn.Softplus())).cuda()
         self.apply(self._weights_init)
 
     @staticmethod
@@ -114,8 +116,8 @@ transition = np.dtype([('s', np.float64, (img_stack, 96, 96)),
 
 GAMMA=0.99
 EPOCH= 8 # beter than 10
-MAX_SIZE = 2000 ## CUDA out of mem for max_size=10000
-BATCH=1024 
+MAX_SIZE = 4000 ## CUDA out of mem for max_size=10000
+BATCH=2048
 EPS=0.1
 LEARNING_RATE = 0.001 # bettr than 0.005 or 0.002 
 
@@ -241,7 +243,8 @@ print('img.shape: ', img_gray.shape)
 
 # 96 x 96 black and white image
 plt.imshow(img_gray, cmap='Greys')
-plt.show()
+# plt.show()
+plt.savefig("./grayimage.png")
 
 # %% [markdown]
 # ### Define Wrapper for Our Environment
@@ -360,7 +363,7 @@ def ppo_train(n_episodes=500, save_every=100):
         avg_scores_array.append(avg_score)
         
         s = (int)(time.time() - time_start)        
-        print('Ep. {}, Ep.Timesteps {}, Score: {:.2f}, Avg.Score: {:.2f}, Run.Score {:.2f}, Time: {:02}:{:02}:{:02} '            .format(i_episode, timestep,                     total_reward, avg_score, running_score, s//3600, s%3600//60, s%60))  
+        print('Ep. {}, Ep.Timesteps {}, Score: {:.2f}, Avg.Score: {:.2f}, Run.Score {:.2f}, Time: {:02}:{:02}:{:02} '.format(i_episode, timestep, total_reward, avg_score, running_score, s//3600, s%3600//60, s%60))  
        
         
         # Save episode is equal to "save_every" timesteps
@@ -384,7 +387,7 @@ agent = Agent(device)
 
 env_wrap = Wrapper(env)
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 100000
 
 scores, avg_scores  = ppo_train(NUM_EPISODES)
 # Save latest model. We'll use it for testing
@@ -392,7 +395,7 @@ save(agent, '.', 'model_weights', 'latest')
 
 
 # %%
-get_ipython().run_line_magic('matplotlib', 'inline')
+# get_ipython().run_line_magic('matplotlib', 'inline')
 
 print('length of scores: ', len(scores), ', len of avg_scores: ', len(avg_scores))
 
@@ -404,6 +407,7 @@ plt.legend(bbox_to_anchor=(1.05, 1))
 plt.ylabel('Score')
 plt.xlabel('Episodes #')
 # plt.show()
+plt.savefig("./loss.png")
 
 
 # %%
@@ -477,5 +481,5 @@ while True:
     if done: 
       break
 env_test.close()
-# show_video()
+show_video()
 
