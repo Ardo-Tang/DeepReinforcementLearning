@@ -48,7 +48,7 @@ while True:
     if done: 
       break
 env.close()
-show_video()
+# show_video()
 
 
 import torch.nn as nn
@@ -115,7 +115,7 @@ transition = np.dtype([('s', np.float64, (img_stack, 96, 96)),
 GAMMA=0.99
 EPOCH= 8 # beter than 10
 MAX_SIZE = 2000 ## CUDA out of mem for max_size=10000
-BATCH=128 
+BATCH=1024 
 EPS=0.1
 LEARNING_RATE = 0.001 # bettr than 0.005 or 0.002 
 
@@ -384,7 +384,7 @@ agent = Agent(device)
 
 env_wrap = Wrapper(env)
 
-NUM_EPISODES = 300
+NUM_EPISODES = 1000
 
 scores, avg_scores  = ppo_train(NUM_EPISODES)
 # Save latest model. We'll use it for testing
@@ -403,7 +403,7 @@ plt.plot(np.arange(1, len(avg_scores)+1), avg_scores, label="Avg on 100 episodes
 plt.legend(bbox_to_anchor=(1.05, 1)) 
 plt.ylabel('Score')
 plt.xlabel('Episodes #')
-plt.show()
+# plt.show()
 
 
 # %%
@@ -427,7 +427,7 @@ def play(env, agent, n_episodes):
         while True:
             action, a_logp = agent.select_action(state)
             env.render()
-            next_state, reward, done, die = env_wrap.step(                 action * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
+            next_state, reward, done, die = env_wrap.step(action * np.array([2., 1., 1.]) + np.array([-1., 0., 0.]))
 
             state = next_state
             score += reward
@@ -440,7 +440,7 @@ def play(env, agent, n_episodes):
         scores_deque.append(score)
         scores.append(score)
 
-        print('Episode {}\tAverage Score: {:.2f},\tScore: {:.2f} \tTime: {:02}:{:02}:{:02}'                  .format(i_episode, np.mean(scores_deque), score, s//3600, s%3600//60, s%60))
+        print('Episode {}\tAverage Score: {:.2f},\tScore: {:.2f} \tTime: {:02}:{:02}:{:02}'.format(i_episode, np.mean(scores_deque), score, s//3600, s%3600//60, s%60))
     return np.mean(scores_deque)
 
 
@@ -477,5 +477,5 @@ while True:
     if done: 
       break
 env_test.close()
-show_video()
+# show_video()
 
