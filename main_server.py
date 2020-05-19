@@ -89,7 +89,7 @@ class myCarRacing:
             action: 動作
         """
         if np.random.rand() <= self.epsilon:
-            return [random.random() for i in range(3)]
+            return [random.random()*2-1 for i in range(3)]
         else:
             q_values = self.model.predict(state)[0]
             return q_values
