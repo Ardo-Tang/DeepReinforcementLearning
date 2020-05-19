@@ -5,17 +5,19 @@ import sys
 def try_gym():
     # 使用gym创建一个CartPole环境
     # 这个环境可以接收一个action，返回执行action后的观测值，奖励与游戏是否结束
-    env = gym.make("CarRacing-v0")
+    env = gym.make("CarRacing-v0") 
+    # env = gym.make("CartPole-v0") 
 
-    print("action",env.action_space.shape)
-    print("observation", env.observation_space.shape)
-    for i in range(10):
-        print(env.action_space.sample())
-    sys.exit()
+    # print("action",env.action_space)
+    # print("observation", env.observation_space.shape)
+    # for i in range(10):
+    #     print(env.action_space.sample())
+    # sys.exit()
 
     # 重置游戏环境
-    env.reset()
-
+    observation = env.reset()
+    # print(observation.reshape([-1] + list(env.observation_space.shape)))
+    # sys.exit()
     # 游戏轮数
     random_episodes = 0
     # 每轮游戏的Reward总和
