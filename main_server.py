@@ -15,7 +15,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.losses import BinaryCrossentropy
 from tensorflow.keras.optimizers import Nadam
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 def wrap_env(env):
   env = Monitor(env, './video', force=True)
@@ -32,7 +32,7 @@ class myCarRacing:
         self.update_target_model()
 
         # 經驗庫
-        self.memory_buffer = deque(maxlen=500)
+        self.memory_buffer = deque(maxlen=1000)
         # Q_value的discount rate，以便計算未來reward的折扣回報
         self.gamma = 0.95
         # 貪婪選擇法的隨機選擇行為的程度
@@ -43,14 +43,15 @@ class myCarRacing:
         self.epsilon_min = 0.01
 
     def build_model(self):
+        import tensorflow as tf
+
         # 自動增長 GPU 記憶體用量
-        gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
-        sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
         # 設定 Keras 使用的 Session
-        tf.compat.v1.keras.backend.set_session(sess)
+        tf.keras.backend.set_session(sess)
 
-        # model
         inputLayer = Input(shape=self.env.observation_space.shape)
 
         convLayer = Conv2D(8, 3, padding="same")(inputLayer)
