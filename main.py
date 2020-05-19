@@ -13,7 +13,7 @@ from tensorflow.keras.layers import (Conv2D, Dense, Flatten, Input,
                                      MaxPooling2D, ReLU, Softmax)
 from tensorflow.keras.models import Model
 from tensorflow.keras.losses import BinaryCrossentropy
-from tensorflow.keras.optimizers import Nadam
+from tensorflow.keras.optimizers import Adam
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
@@ -53,33 +53,25 @@ class myCarRacing:
         # model
         inputLayer = Input(shape=self.env.observation_space.shape)
 
-        convLayer = Conv2D(8, 3, padding="same")(inputLayer)
-        poolingLayer = MaxPooling2D(3, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
-        
-        convLayer = Conv2D(16, 3, padding="same")(activationLayer)
-        poolingLayer = MaxPooling2D(2, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
+        # convLayer = Conv2D(1, 3, padding="same")(inputLayer)
+        # poolingLayer = MaxPooling2D(12, padding="same")(convLayer)
+        # activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
 
-        convLayer = Conv2D(32, 3, padding="same")(activationLayer)
-        poolingLayer = MaxPooling2D(2, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
+        convLayer = Conv2D(1, 12, strides=12, padding="same")(inputLayer)
+        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(convLayer)
         
         flattenLayer = Flatten()(activationLayer)
 
-        denseLayer = Dense(flattenLayer.shape[1]//2)(flattenLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
+        denseLayer = Dense(16)(flattenLayer)
+        denseLayer = ReLU()(denseLayer)
 
-        denseLayer = Dense(denseLayer.shape[1]//2)(denseLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
-
-        denseLayer = Dense(denseLayer.shape[1]//2)(denseLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
+        denseLayer = Dense(16)(denseLayer)
+        denseLayer = ReLU()(denseLayer)
 
         denseLayer = Dense(self.env.action_space.shape[0], activation='linear')(denseLayer)
-        # denseLayer = Softmax()(denseLayer)
 
         model = Model(inputs=inputLayer, outputs=denseLayer)
+        model.summary()
         return model
 
     def update_target_model(self):
@@ -158,7 +150,7 @@ class myCarRacing:
         Returns:
             history:訓練紀錄
         """
-        self.model.compile(loss=BinaryCrossentropy(), optimizer=Nadam(learning_rate=0.001))
+        self.model.compile(loss='mse', optimizer=Adam(1e-3))
 
         history = {'episode': [], 'Episode_reward': [], 'Loss': []}
 

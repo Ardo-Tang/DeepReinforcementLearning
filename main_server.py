@@ -43,44 +43,35 @@ class myCarRacing:
         self.epsilon_min = 0.01
 
     def build_model(self):
-        import tensorflow as tf
-
         # 自動增長 GPU 記憶體用量
-        gpu_options = tf.GPUOptions(allow_growth=True)
-        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+        sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options))
 
         # 設定 Keras 使用的 Session
-        tf.keras.backend.set_session(sess)
+        tf.compat.v1.keras.backend.set_session(sess)
 
+        # model
         inputLayer = Input(shape=self.env.observation_space.shape)
 
-        convLayer = Conv2D(8, 3, padding="same")(inputLayer)
-        poolingLayer = MaxPooling2D(3, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
-        
-        convLayer = Conv2D(16, 3, padding="same")(activationLayer)
-        poolingLayer = MaxPooling2D(2, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
+        # convLayer = Conv2D(1, 3, padding="same")(inputLayer)
+        # poolingLayer = MaxPooling2D(12, padding="same")(convLayer)
+        # activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
 
-        convLayer = Conv2D(32, 3, padding="same")(activationLayer)
-        poolingLayer = MaxPooling2D(2, padding="same")(convLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
+        convLayer = Conv2D(1, 12, strides=12, padding="same")(inputLayer)
+        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(convLayer)
         
         flattenLayer = Flatten()(activationLayer)
 
-        denseLayer = Dense(flattenLayer.shape[1]//2)(flattenLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
+        denseLayer = Dense(16)(flattenLayer)
+        denseLayer = ReLU()(denseLayer)
 
-        denseLayer = Dense(denseLayer.shape[1]//2)(denseLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
-
-        denseLayer = Dense(denseLayer.shape[1]//2)(denseLayer)
-        denseLayer = ReLU(max_value=1.0, negative_slope=0.05)(denseLayer)
+        denseLayer = Dense(16)(denseLayer)
+        denseLayer = ReLU()(denseLayer)
 
         denseLayer = Dense(self.env.action_space.shape[0], activation='linear')(denseLayer)
-        # denseLayer = Softmax()(denseLayer)
 
         model = Model(inputs=inputLayer, outputs=denseLayer)
+        model.summary()
         return model
 
     def update_target_model(self):

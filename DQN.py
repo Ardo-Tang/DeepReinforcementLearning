@@ -66,7 +66,7 @@ class DQN:
         else:
             get = self.model.predict(state)
             q_values = get[0]
-            print(get, q_values)
+            # print(get, q_values)
             return np.argmax(q_values)
 
     def remember(self, state, action, reward, next_state, done):
@@ -80,7 +80,7 @@ class DQN:
             done: 游戏结束标志
         """
         item = (state, action, reward, next_state, done)
-        print("action", action)
+        # print("action", action)
         self.memory_buffer.append(item)
 
     def update_epsilon(self):
@@ -142,6 +142,7 @@ class DQN:
             done = False
 
             while not done:
+                self.env.render()
                 # 通过贪婪选择法ε-greedy选择action。
                 x = observation.reshape(-1, 4)
                 action = self.egreedy_action(x)
@@ -150,7 +151,7 @@ class DQN:
                 # 将数据加入到经验池。
                 reward_sum += reward
                 self.remember(x[0], action, reward, observation, done)
-                print("len", len(self.memory_buffer))
+                # print("len", len(self.memory_buffer))
                 if len(self.memory_buffer) > batch:
                     # 训练
                     X, y = self.process_batch(batch)
