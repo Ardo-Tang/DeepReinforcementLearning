@@ -155,6 +155,8 @@ class myCarRacing:
         history = {'episode': [], 'Episode_reward': [], 'Loss': []}
 
         count = 0
+
+        observation = self.env.reset()
         
         for i in range(episode):
             observation = self.env.reset()
@@ -186,7 +188,7 @@ class myCarRacing:
                     if count != 0 and count % 20 == 0:
                         self.update_target_model()
 
-            if i % 5 == 0:
+            if i % 1 == 0:
                 history['episode'].append(i)
                 history['Episode_reward'].append(reward_sum)
                 history['Loss'].append(loss)

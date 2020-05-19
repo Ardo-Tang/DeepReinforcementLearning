@@ -156,6 +156,8 @@ class myCarRacing:
 
         count = 0
         
+        observation = self.env.reset()
+        
         for i in range(episode):
             observation = self.env.reset()
             
