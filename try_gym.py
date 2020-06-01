@@ -9,10 +9,10 @@ def try_gym():
     # env = gym.make("CartPole-v0") 
 
     # print("action",env.action_space)
-    # print("observation", env.observation_space.shape)
+    print("observation", env.observation_space.shape)
     # for i in range(10):
     #     print(env.action_space.sample())
-    # sys.exit()
+    sys.exit()
 
     # 重置游戏环境
     observation = env.reset()

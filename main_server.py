@@ -21,6 +21,16 @@ def wrap_env(env):
   env = Monitor(env, './video', force=True)
   return env
 
+transition = np.dtype(
+    [
+        ('state', np.float64, (96, 96, 3)), 
+        ('action', np.float64, (3,)),
+        ('reward', np.float64), 
+        ('next_state', np.float64, (96, 96, 3)),
+        ('done', np.bool_)
+    ]
+)
+MAX_SIZE = 500
 class myCarRacing:
     
     def __init__(self, gameName):
@@ -32,7 +42,8 @@ class myCarRacing:
         self.update_target_model()
 
         # 經驗庫
-        self.memory_buffer = deque(maxlen=1000)
+        self.memory_buffer = np.empty(MAX_SIZE, dtype=transition)
+        self.counter = 0
         # Q_value的discount rate，以便計算未來reward的折扣回報
         self.gamma = 0.95
         # 貪婪選擇法的隨機選擇行為的程度
@@ -53,22 +64,25 @@ class myCarRacing:
         # model
         inputLayer = Input(shape=self.env.observation_space.shape)
 
-        # convLayer = Conv2D(1, 3, padding="same")(inputLayer)
-        # poolingLayer = MaxPooling2D(12, padding="same")(convLayer)
-        # activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(poolingLayer)
+        convLayer = Conv2D(8, 4, strides=2, padding="valid")(inputLayer)
+        activationLayer = ReLU()(convLayer)
+        convLayer = Conv2D(16, 3, strides=2, padding="valid")(activationLayer)
+        activationLayer = ReLU()(convLayer)
+        convLayer = Conv2D(32, 3, strides=2, padding="valid")(activationLayer)
+        activationLayer = ReLU()(convLayer)
+        convLayer = Conv2D(64, 3, strides=2, padding="valid")(activationLayer)
+        activationLayer = ReLU()(convLayer)
+        convLayer = Conv2D(128, 3, strides=1, padding="valid")(activationLayer)
+        activationLayer = ReLU()(convLayer)
+        convLayer = Conv2D(256, 3, strides=1, padding="valid")(activationLayer)
+        activationLayer = ReLU()(convLayer)
 
-        convLayer = Conv2D(1, 12, strides=12, padding="same")(inputLayer)
-        activationLayer = ReLU(max_value=1.0, negative_slope=0.05)(convLayer)
-        
         flattenLayer = Flatten()(activationLayer)
 
-        denseLayer = Dense(16)(flattenLayer)
+        denseLayer = Dense(100)(flattenLayer)
         denseLayer = ReLU()(denseLayer)
 
-        denseLayer = Dense(16)(denseLayer)
-        denseLayer = ReLU()(denseLayer)
-
-        denseLayer = Dense(self.env.action_space.shape[0], activation='linear')(denseLayer)
+        denseLayer = Dense(self.env.action_space.shape[0], activation='softmax')(denseLayer)
 
         model = Model(inputs=inputLayer, outputs=denseLayer)
         model.summary()
@@ -103,8 +117,15 @@ class myCarRacing:
             next_state: 下一個狀態
             done: 遊戲結束標誌
         """
-        item = [state, action, reward, next_state, done]
-        self.memory_buffer.append(item)
+        self.memory_buffer[self.counter] = (state, action, reward, next_state, done)
+        self.counter+=1
+        if(self.counter == MAX_SIZE):
+            self.counter = 0
+            return True
+        else:
+            return False
+        # item = [state, action, reward, next_state, done]
+        # self.memory_buffer.append(item)
 
     def update_epsilon(self):
         """更新epsilon
@@ -121,14 +142,15 @@ class myCarRacing:
             y: [Q_value1, Q_value2]
         """
          # 從經驗池中隨機採樣一個batch
-        data = random.sample(self.memory_buffer, batch)
+        # randomList = random.sample(np.linspace(0, batch-1, batch), batch)
+        data = self.memory_buffer[random.sample(list(np.linspace(0, batch-1, batch, dtype=np.int32)), batch)]
         '''
         data = [[state, action, reward, next_state, done],
                 [state, action, reward, next_state, done]...]
         '''
         # 生成Q_target。
-        states = np.array([d[0] for d in data])
-        next_states = np.array([d[3] for d in data])
+        states = np.array([d["state"] for d in data])
+        next_states = np.array([d["next_state"] for d in data])
 
         y = self.model.predict(states)
         q = self.target_model.predict(next_states)
@@ -174,9 +196,9 @@ class myCarRacing:
                 observation, reward, done, _ = self.env.step(action)
 
                 reward_sum += reward
-                self.remember(x[0], action, reward, observation, done)
+                # self.remember(x[0], action, reward, observation, done)
 
-                if len(self.memory_buffer) > batch:
+                if(self.remember(x[0], action, reward, observation, done)):
                     X, y = self.process_batch(batch)
                     loss = self.model.train_on_batch(X, y)
 
@@ -192,6 +214,7 @@ class myCarRacing:
                 history['episode'].append(i)
                 history['Episode_reward'].append(reward_sum)
                 history['Loss'].append(loss)
+                self.model.save("tensorflow.h5")
                 print('Episode: {} | Episode reward: {} | loss: {:.3f} | e:{:.2f}'.format(i, reward_sum, loss, self.epsilon))
         
         self.model.save_weights('model.h5')
@@ -208,8 +231,8 @@ class myCarRacing:
             self.env.render()
 
             x = observation.reshape([-1] + list(self.env.observation_space.shape))
-            q_values = self.model.predict(x)[0]
-            action = np.argmax(q_values)
+            q_values = self.model.predict(x)
+            action = q_values["action"]
             observation, reward, done, _ = self.env.step(action)
 
             count += 1
@@ -226,5 +249,11 @@ class myCarRacing:
 
 if __name__ == "__main__":
     game = myCarRacing("CarRacing-v0")
-    history = game.train(100, 32)
+    try:
+        from tensorflow.keras.models import load_model
+        game.model = load_model("tensorflow.h5") 
+        print("load model.")
+    except:
+        pass
+    history = game.train(100, 16)
     game.play()
