@@ -1,0 +1,1 @@
+/usr/bin/cc   -O3 -DNDEBUG     -rdynamic CMakeFiles/arithchk.dir/arithchk.o  -o ../../../bin/arithchk 

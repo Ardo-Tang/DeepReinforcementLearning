@@ -1,0 +1,1 @@
+if [ ! -e /home/ardo/DeepReinforcementLearning/ViZDoom/bin/vizdoom ]; then ln -sf /home/ardo/DeepReinforcementLearning/ViZDoom/src/vizdoom/src/vizdoom /home/ardo/DeepReinforcementLearning/ViZDoom/bin/vizdoom; fi

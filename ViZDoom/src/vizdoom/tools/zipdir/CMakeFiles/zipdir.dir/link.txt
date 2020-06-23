@@ -1,0 +1,1 @@
+/usr/bin/cc   -O3 -DNDEBUG     -rdynamic CMakeFiles/zipdir.dir/zipdir.o  -o ../../../../bin/zipdir -lz -lbz2 ../../lzma/liblzma.a 

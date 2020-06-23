@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ardo/DeepReinforcementLearning/ViZDoom/src/vizdoom/gdtoa/arith.h
+
+/home/ardo/DeepReinforcementLearning/ViZDoom/src/vizdoom/gdtoa/qnan.c
+stdio.h
+-
+arith.h
+/home/ardo/DeepReinforcementLearning/ViZDoom/src/vizdoom/gdtoa/arith.h
+
